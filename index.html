@@ -4,24 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>วิเคราะห์ความสดกล้วยหอม | Banana Freshness AI</title>
+
+<!-- โหลดฟอนต์จาก Google Fonts: Fraunces ใช้กับหัวข้อ, IBM Plex Sans Thai ใช้กับเนื้อหาทั่วไป -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
+  /* ============================================================
+     ตัวแปรสี (CSS Variables) — กำหนดสีทั้งเว็บไว้ที่เดียว
+     ถ้าอยากเปลี่ยนโทนสีเว็บทั้งหมด แก้แค่ค่าตรงนี้ที่เดียวพอ
+     ============================================================ */
   :root{
-    --cream:#FBF6E6;
-    --paper:#F3ECD4;
-    --ink:#33260F;
-    --green-deep:#4C6A2A;
-    --green-mid:#7CA13D;
-    --green-soft:#D8E4B6;
-    --yellow:#E7B227;
-    --yellow-deep:#C8901A;
-    --brown-spot:#5C3A21;
-    --brown-deep:#3A2413;
-    --line:rgba(51,38,15,0.16);
+    --cream:#FBF6E6;        /* สีพื้นหลังหลักของเว็บ โทนครีมอ่อน */
+    --paper:#F3ECD4;        /* สีพื้นหลังรอง เช่น แถบ how-it-works */
+    --ink:#33260F;          /* สีตัวหนังสือหลัก */
+    --green-deep:#4C6A2A;   /* สีเขียวเข้ม ใช้กับหัวข้อย่อย/เส้นคั่น */
+    --green-mid:#7CA13D;    /* สีเขียวกลาง ใช้กับปุ่ม/ไล่สี */
+    --green-soft:#D8E4B6;   /* สีเขียวอ่อน (สำรองไว้ใช้) */
+    --yellow:#E7B227;       /* สีเหลืองหลัก ใช้กับปุ่มสแกน */
+    --yellow-deep:#C8901A;  /* สีเหลืองเข้ม ใช้กับข้อความเน้น */
+    --brown-spot:#5C3A21;   /* สีน้ำตาล ใช้แทนจุดด่างบนกล้วยสุกงอม */
+    --brown-deep:#3A2413;   /* สีน้ำตาลเข้มสุด ใช้กับพื้นหลังกรอบกล้อง/ปุ่มหลัก */
+    --line:rgba(51,38,15,0.16); /* สีเส้นขอบบาง ๆ ทั่วเว็บ */
   }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+
+  /* ---------- RESET พื้นฐาน ---------- */
+  *{box-sizing:border-box;} /* ทำให้ padding/border ไม่ดันขนาดกล่องให้ใหญ่เกิน */
+  html{scroll-behavior:smooth;} /* เลื่อนหน้าจอแบบนุ่มนวลเวลาคลิกเมนู */
   body{
     margin:0;
     background:var(--cream);
@@ -30,19 +39,21 @@
     line-height:1.6;
   }
   h1,h2,h3,.display{
-    font-family:'Fraunces', serif;
+    font-family:'Fraunces', serif; /* ฟอนต์หัวข้อโทน editorial */
     color:var(--brown-deep);
     margin:0;
   }
   a{color:inherit;}
   img{max-width:100%;display:block;}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;} /* กรอบความกว้างเนื้อหา ใช้ซ้ำหลายส่วน */
 
-  /* ---------- NAV ---------- */
+  /* ============================================================
+     NAV — แถบเมนูด้านบนสุด ที่ลอยติดหัวจอ (sticky)
+     ============================================================ */
   nav{
-    position:sticky;top:0;z-index:50;
+    position:sticky;top:0;z-index:50; /* ทำให้เมนูลอยอยู่บนสุดตลอดเวลาเลื่อนหน้า */
     background:rgba(251,246,230,0.92);
-    backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px); /* เบลอพื้นหลังด้านหลังเมนูแบบเบา ๆ */
     border-bottom:1px solid var(--line);
   }
   .nav-inner{
@@ -54,6 +65,7 @@
     font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;
   }
   .brand-mark{
+    /* วงกลมโลโก้เล็ก ๆ หน้าชื่อเว็บ ไล่สีเหลือง-เขียวแบบกล้วย */
     width:30px;height:30px;border-radius:50% 50% 50% 4px;
     background:linear-gradient(135deg,var(--yellow) 55%,var(--green-mid) 55%);
     flex-shrink:0;
@@ -62,28 +74,33 @@
   .nav-links a{text-decoration:none;opacity:0.8;transition:opacity .2s;}
   .nav-links a:hover{opacity:1;}
   .nav-cta{
+    /* ปุ่ม "เริ่มสแกน" มุมขวาบนของเมนู */
     background:var(--brown-deep);color:var(--cream);
     padding:9px 18px;border-radius:100px;font-size:0.88rem;
     text-decoration:none;font-weight:500;
   }
-  @media (max-width:760px){ .nav-links{display:none;} }
+  @media (max-width:760px){ .nav-links{display:none;} } /* ซ่อนเมนูกลางจอเวลาหน้าจอเล็ก (มือถือ) */
 
-  /* ---------- HERO ---------- */
+  /* ============================================================
+     HERO — ส่วนหัวเว็บ มีข้อความแนะนำเว็บ + กล่องกล้องสแกนกล้วย
+     ============================================================ */
   .hero{
     padding:64px 0 40px;
     display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;
+    /* แบ่งจอเป็น 2 คอลัมน์: ซ้ายข้อความ / ขวากล่องกล้อง */
   }
   .eyebrow-line{
+    /* ข้อความเล็ก ๆ เหนือหัวข้อใหญ่ พร้อมขีดสั้น ๆ นำหน้า */
     display:flex;align-items:center;gap:10px;margin-bottom:18px;
     font-size:0.85rem;color:var(--green-deep);font-weight:600;
   }
   .eyebrow-line::before{content:"";width:26px;height:2px;background:var(--green-mid);}
   h1.display{
-    font-size:clamp(2.1rem,4.2vw,3.4rem);
+    font-size:clamp(2.1rem,4.2vw,3.4rem); /* ขนาดตัวอักษรปรับตามความกว้างจออัตโนมัติ */
     font-weight:600;line-height:1.08;letter-spacing:-0.01em;
   }
   h1.display em{
-    font-style:italic;color:var(--yellow-deep);
+    font-style:italic;color:var(--yellow-deep); /* เน้นคำว่า "กล้วยหอม" ด้วยสีเหลือง */
   }
   .hero-desc{
     margin-top:22px;font-size:1.05rem;max-width:46ch;color:#4a3a20;
@@ -99,33 +116,40 @@
   .btn-secondary:hover{background:var(--paper);}
 
   .hero-stats{
+    /* แถวตัวเลขสรุปสถิติโครงงาน (300 ภาพ, 3 ระยะ, 100%) */
     display:flex;gap:34px;margin-top:44px;padding-top:24px;border-top:1px solid var(--line);
   }
   .stat-num{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;color:var(--brown-deep);}
   .stat-label{font-size:0.8rem;color:#6b5836;margin-top:2px;}
 
-  /* ---------- SCANNER PANEL ---------- */
+  /* ============================================================
+     SCANNER PANEL — กล่องสีน้ำตาลเข้มฝั่งขวา ที่แสดงภาพจากกล้อง
+     ============================================================ */
   .scanner{
     background:var(--brown-deep);
     border-radius:26px;
     padding:20px;
     position:relative;
-    box-shadow:0 30px 60px -20px rgba(58,36,19,0.45);
+    box-shadow:0 30px 60px -20px rgba(58,36,19,0.45); /* เงานุ่ม ๆ ใต้กล่อง */
   }
   .scanner-frame{
+    /* กรอบสี่เหลี่ยมสำหรับแสดงวิดีโอ/ภาพนิ่งจากกล้อง */
     position:relative;border-radius:18px;overflow:hidden;
     background:#1f1408;aspect-ratio:4/5;
     display:flex;align-items:center;justify-content:center;
   }
   #video, #still{
+    /* ทั้งวิดีโอสดและภาพนิ่งที่จับได้ ให้เต็มกรอบพอดีเสมอ */
     width:100%;height:100%;object-fit:cover;position:absolute;inset:0;
   }
-  #still{display:none;}
+  #still{display:none;} /* ซ่อนภาพนิ่งไว้ก่อน จะโชว์ตอนกดสแกนแล้วเท่านั้น */
   .scan-idle{
+    /* ข้อความแนะนำก่อนเปิดกล้อง เช่น "กดปุ่มเพื่อเริ่มสแกน" */
     color:#d9c7a0;text-align:center;padding:30px;font-size:0.92rem;z-index:2;position:relative;
   }
   .scan-idle svg{margin-bottom:14px;opacity:0.7;}
   .corner{
+    /* มุมกรอบสี่มุมสไตล์ "จุดเล็ง" ของกล้อง AI */
     position:absolute;width:26px;height:26px;border-color:var(--yellow);
     opacity:0.9;z-index:3;
   }
@@ -136,51 +160,60 @@
 
   .scan-controls{display:flex;gap:10px;margin-top:16px;}
   .scan-controls .btn{flex:1;padding:13px 16px;font-size:0.9rem;}
-  .btn-yellow{background:var(--yellow);color:var(--brown-deep);}
+  .btn-yellow{background:var(--yellow);color:var(--brown-deep);} /* ปุ่ม "สแกนกล้วย" */
   .btn-yellow:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(231,178,39,0.35);}
-  .btn-ghost{background:rgba(255,255,255,0.08);color:var(--cream);}
+  .btn-ghost{background:rgba(255,255,255,0.08);color:var(--cream);} /* ปุ่ม "สแกนใหม่" แบบโปร่งแสง */
   .btn-ghost:hover{background:rgba(255,255,255,0.16);}
 
   .result-card{
+    /* การ์ดแสดงผลลัพธ์การวิเคราะห์ ซ่อนไว้ก่อน โชว์หลังกดสแกน */
     margin-top:14px;background:var(--cream);border-radius:16px;padding:18px 20px;
     display:none;
   }
-  .result-card.show{display:block;animation:rise .5s ease;}
+  .result-card.show{display:block;animation:rise .5s ease;} /* คลาสนี้ถูกเพิ่มด้วย JS ตอนมีผลลัพธ์ */
   @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
   .result-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .result-stage{font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;}
   .result-badge{
+    /* ป้ายเล็ก ๆ บอกสถานะ เช่น "พร้อมทาน" / "ควรแปรรูปด่วน" / "ไม่พบกล้วย" */
     font-size:0.78rem;font-weight:600;padding:5px 12px;border-radius:100px;color:var(--cream);
   }
   .confidence-row{margin-top:12px;}
   .confidence-label{display:flex;justify-content:space-between;font-size:0.8rem;color:#6b5836;margin-bottom:6px;}
   .confidence-bar{height:8px;background:var(--paper);border-radius:100px;overflow:hidden;}
-  .confidence-fill{height:100%;border-radius:100px;transition:width .8s ease;}
+  .confidence-fill{height:100%;border-radius:100px;transition:width .8s ease;} /* แถบสีวิ่งบอกค่าความเชื่อมั่น */
   .result-note{margin-top:14px;font-size:0.92rem;color:#4a3a20;padding-top:12px;border-top:1px dashed var(--line);}
 
-  /* ---------- STAGE STRIP ---------- */
+  /* ============================================================
+     STAGE STRIP — การ์ด 3 ใบอธิบายระยะดิบ/สุกกำลังดี/สุกงอม
+     ============================================================ */
   .stages{padding:80px 0 40px;}
-  .section-head{max-width:60ch;margin-bottom:44px;}
+  .section-head{max-width:60ch;margin-bottom:44px;} /* หัวข้อของแต่ละ section คุมความกว้างไม่ให้ยาวเกิน */
   .section-head .eyebrow-line{margin-bottom:14px;}
   .section-head h2{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:600;line-height:1.2;}
   .section-head p{margin-top:14px;color:#5a4826;font-size:1rem;}
 
-  .stage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .stage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;} /* วางการ์ด 3 ใบเรียงแนวนอน */
   .stage-card{
     border-radius:20px;padding:26px;position:relative;overflow:hidden;
     border:1px solid var(--line);
   }
+  /* พื้นหลังไล่สีของการ์ดแต่ละระยะ ให้โทนตรงกับสีเปลือกจริง */
   .stage-card.raw{background:linear-gradient(165deg,#EEF3DA,#DCE7B8);}
   .stage-card.ripe{background:linear-gradient(165deg,#FCEFC2,#F6D877);}
   .stage-card.over{background:linear-gradient(165deg,#EBDBBE,#D6B98C);}
+
   .peel-swatch{
+    /* แถบสี่เหลี่ยมด้านบนของการ์ด จำลองสีผิวเปลือกกล้วยของแต่ละระยะ */
     width:100%;height:88px;border-radius:14px;margin-bottom:20px;position:relative;overflow:hidden;
   }
-  .raw .peel-swatch{background:linear-gradient(120deg,#6B8F3D,#8FAE55 40%,#B7C77E);}
-  .ripe .peel-swatch{background:linear-gradient(120deg,#E7B227,#F0C34A 45%,#F7DA83);}
-  .over .peel-swatch{background:linear-gradient(120deg,#C9992F,#7A5228 55%,#3A2413);}
+  .raw .peel-swatch{background:linear-gradient(120deg,#6B8F3D,#8FAE55 40%,#B7C77E);} /* เขียว = ดิบห่าม */
+  .ripe .peel-swatch{background:linear-gradient(120deg,#E7B227,#F0C34A 45%,#F7DA83);} /* เหลืองนวล = สุกกำลังดี */
+  .over .peel-swatch{background:linear-gradient(120deg,#C9992F,#7A5228 55%,#3A2413);} /* น้ำตาลเข้ม = สุกงอม */
+
   .over .peel-swatch::after{
-    content:"";position:absolute;inset:0;
+    /* จำลองจุดด่างสีน้ำตาลบนเปลือกกล้วยสุกงอม โดยใช้วงกลมไล่สีหลายจุดซ้อนกัน */
+    content:"";position:absolute;inset:0; /* สร้างชั้นเปล่าที่ครอบเต็มกล่อง .peel-swatch */
     background-image:radial-gradient(circle at 20% 30%, rgba(58,36,19,0.6) 0 4px, transparent 4px),
       radial-gradient(circle at 45% 70%, rgba(58,36,19,0.5) 0 5px, transparent 5px),
       radial-gradient(circle at 70% 25%, rgba(58,36,19,0.55) 0 3px, transparent 3px),
@@ -191,34 +224,42 @@
   .stage-name{font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;margin-bottom:6px;}
   .stage-desc{font-size:0.9rem;color:#4a3a20;margin-bottom:18px;}
   .stage-tip{
+    /* คำแนะนำการเก็บรักษา/แปรรูปที่ท้ายการ์ดแต่ละใบ */
     font-size:0.85rem;padding-top:16px;border-top:1px solid rgba(58,36,19,0.15);
     display:flex;gap:8px;color:#3a2413;
   }
   .stage-tip svg{flex-shrink:0;margin-top:2px;}
 
+  /* ปรับเลย์เอาต์ให้เหลือ 1 คอลัมน์เวลาจอแคบ (มือถือ/แท็บเล็ต) */
   @media (max-width:900px){
     .hero{grid-template-columns:1fr;}
     .stage-grid{grid-template-columns:1fr;}
   }
 
-  /* ---------- HOW IT WORKS ---------- */
+  /* ============================================================
+     HOW IT WORKS — แถบ 4 ขั้นตอนการทำงานของระบบ
+     ============================================================ */
   .how{padding:60px 0;background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   .how-list{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:40px;}
   .how-item{padding:0 22px 0 0;border-left:1px solid var(--line);padding-left:22px;}
-  .how-item:first-child{border-left:none;padding-left:0;}
+  .how-item:first-child{border-left:none;padding-left:0;} /* ช่องแรกไม่ต้องมีเส้นคั่นซ้าย */
   .how-num{font-family:'Fraunces',serif;font-size:0.85rem;color:var(--green-deep);font-weight:600;margin-bottom:10px;}
   .how-item h3{font-size:1.05rem;font-weight:600;margin-bottom:8px;}
   .how-item p{font-size:0.88rem;color:#5a4826;}
   @media (max-width:900px){
+    /* จอแคบ: เปลี่ยนจากเรียงแนวนอนเป็นเรียงแนวตั้ง เส้นคั่นย้ายไปอยู่ด้านบนแทน */
     .how-list{grid-template-columns:1fr;gap:24px;}
     .how-item{border-left:none;padding-left:0;border-top:1px solid var(--line);padding-top:20px;}
     .how-item:first-child{border-top:none;padding-top:0;}
   }
 
-  /* ---------- ABOUT / METHOD ---------- */
+  /* ============================================================
+     ABOUT / METHOD — ส่วนอธิบายเบื้องหลังโมเดลและผลการทดลองใช้งาน
+     ============================================================ */
   .about{padding:80px 0;}
   .about-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:56px;align-items:start;}
   .about-card{
+    /* การ์ดสีน้ำตาลเข้มฝั่งซ้าย อธิบายเทคโนโลยีที่ใช้ */
     background:var(--brown-deep);color:var(--cream);border-radius:22px;padding:36px;
   }
   .about-card h3{color:var(--cream);font-size:1.3rem;margin-bottom:14px;}
@@ -230,7 +271,7 @@
   }
   .about-text h2{font-size:clamp(1.6rem,2.6vw,2.1rem);margin-bottom:18px;}
   .about-text p{color:#4a3a20;margin-bottom:16px;font-size:0.98rem;}
-  .metric-row{display:flex;gap:30px;margin-top:24px;}
+  .metric-row{display:flex;gap:30px;margin-top:24px;} /* แถวตัวเลขสรุปผลการทดลองใช้งาน 30 คน */
   .metric-block{border-top:2px solid var(--green-mid);padding-top:10px;}
   .metric-block .num{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--brown-deep);}
   .metric-block .lab{font-size:0.8rem;color:#6b5836;}
@@ -245,6 +286,7 @@
 </head>
 <body>
 
+<!-- ========================= แถบเมนูบนสุด ========================= -->
 <nav>
   <div class="nav-inner">
     <div class="brand"><span class="brand-mark"></span>เว็บวิเคราะห์กล้วยหอม</div>
@@ -258,7 +300,9 @@
   </div>
 </nav>
 
+<!-- ========================= ส่วน HERO: ข้อความแนะนำ + กล่องกล้อง ========================= -->
 <section class="hero wrap" id="scan">
+  <!-- คอลัมน์ซ้าย: หัวข้อ คำอธิบาย ปุ่มเริ่มต้น และตัวเลขสถิติ -->
   <div>
     <div class="eyebrow-line">ปัญญาประดิษฐ์ · คอมพิวเตอร์วิทัศน์</div>
     <h1 class="display">รู้ระยะสุกของ<br><em>กล้วยหอม</em> ได้ในไม่กี่วินาที</h1>
@@ -276,14 +320,19 @@
     </div>
   </div>
 
+  <!-- คอลัมน์ขวา: กล่องกล้องสแกน + การ์ดแสดงผลลัพธ์ -->
   <div class="scanner">
     <div class="scanner-frame" id="scanFrame">
+      <!-- ข้อความ/ไอคอนที่โชว์ก่อนเปิดกล้อง -->
       <div class="scan-idle" id="idleMsg">
         <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#d9c7a0" stroke-width="1.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         <div>กดปุ่ม "เปิดกล้องเริ่มสแกน" แล้วอนุญาตให้เว็บไซต์ใช้กล้อง</div>
       </div>
+      <!-- วิดีโอสดจากกล้อง (แสดงหลังกดเปิดกล้อง) -->
       <video id="video" autoplay playsinline muted></video>
+      <!-- ภาพนิ่งที่ถูกจับไว้ตอนกดปุ่มสแกน (ซ่อนไว้จนกว่าจะสแกน) -->
       <canvas id="still"></canvas>
+      <!-- กรอบมุมสี่มุม ให้ดูเหมือนกล้อง AI กำลังเล็งวัตถุ -->
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
     </div>
@@ -292,6 +341,7 @@
       <button class="btn btn-ghost" id="resetBtn" style="display:none;">สแกนใหม่</button>
     </div>
 
+    <!-- การ์ดผลลัพธ์: ซ่อนไว้ก่อน จะถูกเติมข้อมูลและแสดงด้วย JavaScript หลังกดสแกน -->
     <div class="result-card" id="resultCard">
       <div class="result-top">
         <div class="result-stage" id="resultStage">—</div>
@@ -306,8 +356,10 @@
   </div>
 </section>
 
+<!-- แคนวาสที่ใช้ประมวลผลภาพเบื้องหลัง ไม่แสดงผลบนหน้าจอ (display:none) -->
 <canvas id="workCanvas" style="display:none;"></canvas>
 
+<!-- ========================= ส่วนอธิบาย 3 ระยะการสุก ========================= -->
 <section class="stages wrap" id="stages">
   <div class="section-head">
     <div class="eyebrow-line">อ้างอิงการจำแนก</div>
@@ -315,18 +367,21 @@
     <p>โมเดลฝึกจากภาพกล้วยหอมจริง 300 ภาพ แบ่งเป็น 3 คลาส คลาสละ 100 ภาพ โดยสกัดคุณลักษณะจากโทนสีและพื้นผิวของเปลือก</p>
   </div>
   <div class="stage-grid">
+    <!-- การ์ดที่ 1: ระยะดิบห่าม -->
     <div class="stage-card raw">
       <div class="peel-swatch"></div>
       <div class="stage-name">ระยะดิบห่าม</div>
       <div class="stage-desc">เปลือกสีเขียวถึงเขียวอมเหลือง เนื้อด้านในยังแข็ง ยังไม่พร้อมรับประทาน</div>
       <div class="stage-tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a2413" stroke-width="2"><path d="M12 2v6M12 22v-6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M2 12h6M16 12h6M4.9 19.1l4.2-4.2M14.9 9.1l4.2-4.2"/></svg>เก็บที่อุณหภูมิห้อง ห่อขั้วด้วยพลาสติกเพื่อชะลอการสุก</div>
     </div>
+    <!-- การ์ดที่ 2: ระยะสุกกำลังดี -->
     <div class="stage-card ripe">
       <div class="peel-swatch"></div>
       <div class="stage-name">ระยะสุกกำลังดี</div>
       <div class="stage-desc">เปลือกสีเหลืองนวลทั่วผล เนื้อนุ่มหวาน พร้อมรับประทานทันที</div>
       <div class="stage-tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a2413" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>แขวนไว้ให้ผลไม่ทับกัน หรือแช่เย็นเพื่อชะลอการสุกต่อ</div>
     </div>
+    <!-- การ์ดที่ 3: ระยะสุกงอมเริ่มเสีย -->
     <div class="stage-card over">
       <div class="peel-swatch"></div>
       <div class="stage-name">ระยะสุกงอมเริ่มเสีย</div>
@@ -336,6 +391,7 @@
   </div>
 </section>
 
+<!-- ========================= ส่วนอธิบายขั้นตอนการทำงานของระบบ ========================= -->
 <section class="how wrap" id="how">
   <div class="section-head" style="margin-bottom:0;">
     <div class="eyebrow-line">วิธีทำงานของระบบ</div>
@@ -365,6 +421,7 @@
   </div>
 </section>
 
+<!-- ========================= ส่วนเกี่ยวกับโมเดล / ผลการทดลองใช้งาน ========================= -->
 <section class="about wrap" id="about">
   <div class="about-grid">
     <div class="about-card">
@@ -395,21 +452,32 @@
 </footer>
 
 <script>
-const video = document.getElementById('video');
-const stillCanvas = document.getElementById('still');
-const idleMsg = document.getElementById('idleMsg');
-const startBtn = document.getElementById('startBtn');
-const captureBtn = document.getElementById('captureBtn');
-const resetBtn = document.getElementById('resetBtn');
-const resultCard = document.getElementById('resultCard');
-const resultStage = document.getElementById('resultStage');
-const resultBadge = document.getElementById('resultBadge');
-const confPct = document.getElementById('confPct');
-const confFill = document.getElementById('confFill');
-const resultNote = document.getElementById('resultNote');
-const workCanvas = document.getElementById('workCanvas');
-let stream = null;
+/* ================================================================
+   ส่วนที่ 1: อ้างอิงถึง element ต่าง ๆ บนหน้าเว็บที่ JavaScript ต้องใช้งาน
+   (getElementById คือการ "จับ" element จาก HTML มาเก็บไว้ในตัวแปร
+   เพื่อจะได้สั่งงานหรืออ่านค่าได้ในโค้ดส่วนถัดไป)
+   ================================================================ */
+const video       = document.getElementById('video');       // แท็ก <video> แสดงภาพสดจากกล้อง
+const stillCanvas = document.getElementById('still');       // <canvas> ที่ใช้โชว์ภาพนิ่งหลังกดสแกน
+const idleMsg     = document.getElementById('idleMsg');     // ข้อความ "กดปุ่มเพื่อเริ่มสแกน"
+const startBtn    = document.getElementById('startBtn');    // ปุ่ม "เปิดกล้องเริ่มสแกน"
+const captureBtn  = document.getElementById('captureBtn');  // ปุ่ม "สแกนกล้วย" (จับภาพ)
+const resetBtn    = document.getElementById('resetBtn');    // ปุ่ม "สแกนใหม่"
+const resultCard  = document.getElementById('resultCard');  // การ์ดแสดงผลลัพธ์ทั้งก้อน
+const resultStage = document.getElementById('resultStage'); // ข้อความชื่อระยะ เช่น "ระยะสุกกำลังดี"
+const resultBadge = document.getElementById('resultBadge'); // ป้ายเล็ก ๆ เช่น "พร้อมทาน"
+const confPct     = document.getElementById('confPct');     // ตัวเลขเปอร์เซ็นต์ความเชื่อมั่น
+const confFill    = document.getElementById('confFill');    // แถบสีที่วิ่งตามค่าความเชื่อมั่น
+const resultNote  = document.getElementById('resultNote');  // ข้อความคำแนะนำท้ายการ์ด
+const workCanvas  = document.getElementById('workCanvas');  // canvas ที่ซ่อนไว้ ใช้ประมวลผลภาพเบื้องหลัง
+let stream = null; // เก็บ stream ของกล้องไว้ (เผื่อจะเอาไปปิดกล้องในอนาคต)
 
+/* ================================================================
+   ส่วนที่ 2: ข้อมูลของแต่ละระยะการสุก
+   เก็บชื่อ, สีประจำระยะ, และข้อความคำแนะนำไว้เป็นก้อนเดียว
+   เพื่อให้ฟังก์ชัน showResult() หยิบไปใช้แสดงผลได้ง่าย
+   ถ้าอยากแก้ "คำแนะนำ" ของแต่ละระยะ ให้แก้ข้อความในค่า note ตรงนี้ได้เลย
+   ================================================================ */
 const STAGES = {
   raw: {
     name: 'ระยะดิบห่าม',
@@ -425,32 +493,52 @@ const STAGES = {
     name: 'ระยะสุกงอมเริ่มเสีย',
     color: '#5C3A21',
     note: 'พบจุดสีน้ำตาลกระจายทั่วผล แนะนำปอกเปลือกแช่แข็งเก็บไว้ หรือนำไปแปรรูปเป็นเค้กกล้วยหอมเพื่อลดขยะอาหาร'
+  },
+  // เพิ่มสถานะพิเศษ "ไม่ใช่กล้วย" — ใช้ตอนที่สแกนแล้วสีในภาพไม่เข้าข่ายกล้วยหอมเลย
+  notBanana: {
+    name: 'ไม่พบกล้วยหอมในภาพ',
+    color: '#B33A2E',
+    note: 'สิ่งที่สแกนไม่ใช่กล้วยหอม กรุณาส่องกล้องไปที่กล้วยหอมให้เห็นเปลือกเต็มเฟรม แล้วลองสแกนใหม่อีกครั้ง'
   }
 };
 
+/* ================================================================
+   ส่วนที่ 3: เปิดกล้องเมื่อกดปุ่ม "เปิดกล้องเริ่มสแกน"
+   ใช้ navigator.mediaDevices.getUserMedia ซึ่งเป็น API มาตรฐานของเบราว์เซอร์
+   สำหรับขอสิทธิ์เข้าถึงกล้อง/ไมโครโฟนของอุปกรณ์
+   ================================================================ */
 startBtn.addEventListener('click', async () => {
   try {
+    // facingMode: 'environment' คือขอใช้กล้องหลัง (กล้องหลังมือถือ) เป็นค่าตั้งต้น
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    video.srcObject = stream;
-    idleMsg.style.display = 'none';
-    video.style.display = 'block';
-    captureBtn.disabled = false;
+    video.srcObject = stream;      // นำภาพจากกล้องไปแสดงในแท็ก <video>
+    idleMsg.style.display = 'none'; // ซ่อนข้อความแนะนำเริ่มต้น
+    video.style.display = 'block';  // โชว์ภาพวิดีโอสด
+    captureBtn.disabled = false;    // ปลดล็อกปุ่มสแกน ให้กดได้
     startBtn.textContent = 'กล้องเปิดอยู่';
-    startBtn.disabled = true;
+    startBtn.disabled = true;       // ปิดปุ่มเปิดกล้อง กันคนกดซ้ำ
   } catch (err) {
+    // เข้ามาตรงนี้ถ้าเบราว์เซอร์ไม่ให้สิทธิ์กล้อง หรืออุปกรณ์ไม่มีกล้อง
     idleMsg.innerHTML = '<div>ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์ แล้วลองใหม่</div>';
   }
 });
 
+/* ================================================================
+   ส่วนที่ 4: จับภาพนิ่งจากวิดีโอ แล้วส่งไปวิเคราะห์
+   ================================================================ */
 captureBtn.addEventListener('click', () => {
+  // ขนาดภาพอ้างอิงตามความละเอียดจริงของวิดีโอ (ถ้าอ่านไม่ได้ ใช้ค่าสำรอง 480x600)
   const w = video.videoWidth || 480;
   const h = video.videoHeight || 600;
+
+  // วาดเฟรมปัจจุบันของวิดีโอลงบน canvas ที่ซ่อนไว้ (workCanvas) เพื่อเอาไปคำนวณสีต่อ
   workCanvas.width = w;
   workCanvas.height = h;
   const ctx = workCanvas.getContext('2d');
   ctx.drawImage(video, 0, 0, w, h);
 
-  // freeze frame visually
+  // วาดเฟรมเดียวกันอีกชุดลงบน canvas ที่โชว์บนหน้าจอ (stillCanvas)
+  // เพื่อ "หยุดภาพนิ่ง" ให้ผู้ใช้เห็นว่ากำลังดูภาพที่ถูกสแกนอยู่
   stillCanvas.width = w;
   stillCanvas.height = h;
   const sctx = stillCanvas.getContext('2d');
@@ -458,28 +546,40 @@ captureBtn.addEventListener('click', () => {
   stillCanvas.style.display = 'block';
   video.style.display = 'none';
 
+  // เรียกฟังก์ชันวิเคราะห์ภาพ แล้วนำผลลัพธ์ไปแสดงผล
   const result = analyzeFrame(ctx, w, h);
   showResult(result);
 
+  // สลับปุ่ม: ซ่อนปุ่มสแกน โชว์ปุ่มสแกนใหม่แทน
   captureBtn.style.display = 'none';
   resetBtn.style.display = 'block';
 });
 
+/* ================================================================
+   ส่วนที่ 5: ปุ่ม "สแกนใหม่" — เคลียร์ทุกอย่างกลับไปเริ่มต้นใหม่
+   ================================================================ */
 resetBtn.addEventListener('click', () => {
-  stillCanvas.style.display = 'none';
-  video.style.display = 'block';
-  captureBtn.style.display = 'block';
-  resetBtn.style.display = 'none';
-  resultCard.classList.remove('show');
+  stillCanvas.style.display = 'none';   // ซ่อนภาพนิ่งเดิม
+  video.style.display = 'block';        // กลับไปโชว์วิดีโอสดอีกครั้ง
+  captureBtn.style.display = 'block';   // เอาปุ่มสแกนกลับมา
+  resetBtn.style.display = 'none';      // ซ่อนปุ่มสแกนใหม่ (เพราะยังไม่มีผลลัพธ์ใหม่)
+  resultCard.classList.remove('show');  // ซ่อนการ์ดผลลัพธ์เดิม
 });
 
+/* ================================================================
+   ส่วนที่ 6: แปลงค่าสี RGB (แดง-เขียว-น้ำเงิน) เป็น HSV
+   (Hue = โทนสี, Saturation = ความสดของสี, Value = ความสว่าง)
+   เหตุผลที่ต้องแปลงเป็น HSV: ค่า Hue จะบอก "โทนสี" ได้ตรงกับที่ตาคนมองเห็น
+   เช่น เขียว, เหลือง, น้ำตาล ได้ชัดเจนกว่าการอ่านค่า RGB ตรง ๆ
+   จึงใช้ตัดสินใจจำแนกระยะกล้วยและตรวจว่า "ใช่กล้วยหรือไม่" ได้แม่นยำกว่า
+   ================================================================ */
 function rgbToHsv(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
+  r /= 255; g /= 255; b /= 255; // ปรับค่าจาก 0-255 ให้อยู่ในช่วง 0-1
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   let h, s, v = max;
   const d = max - min;
   s = max === 0 ? 0 : d / max;
-  if (max === min) { h = 0; }
+  if (max === min) { h = 0; } // ถ้าไม่มีสีเด่นเลย (เทา/ขาว/ดำ) ให้ hue เป็น 0
   else {
     switch (max) {
       case r: h = (g - b) / d + (g < b ? 6 : 0); break;
@@ -488,53 +588,104 @@ function rgbToHsv(r, g, b) {
     }
     h /= 6;
   }
-  return [h * 360, s, v];
+  return [h * 360, s, v]; // คืนค่า hue เป็นองศา (0-360), saturation และ value เป็น 0-1
 }
 
+/* ================================================================
+   ส่วนที่ 7: หัวใจของระบบวิเคราะห์ภาพ
+   วิเคราะห์ว่าภาพที่สแกนคือ "กล้วยหอมหรือไม่" และถ้าใช่ อยู่ระยะไหน
+   ================================================================ */
 function analyzeFrame(ctx, w, h) {
-  // sample the central region, where the fruit is expected to be
+  // สุ่มตรวจเฉพาะพื้นที่ตรงกลางภาพ (60% กลางเฟรม) เพราะเป็นจุดที่วัตถุที่ถูกสแกนมักอยู่
   const cw = Math.floor(w * 0.6), ch = Math.floor(h * 0.6);
   const cx = Math.floor((w - cw) / 2), cy = Math.floor((h - ch) / 2);
-  const data = ctx.getImageData(cx, cy, cw, ch).data;
+  const data = ctx.getImageData(cx, cy, cw, ch).data; // อ่านค่าสีของทุกพิกเซลในพื้นที่นั้น
 
-  let sumH = 0, sumS = 0, sumV = 0, count = 0, darkCount = 0;
-  const step = 4 * 6; // sample every 6th pixel for performance
+  let sumH = 0, sumS = 0, sumV = 0, count = 0;
+  let darkCount = 0;        // นับพิกเซลที่เข้าข่าย "จุดด่างสีน้ำตาล" (บ่งบอกความสุกงอม)
+  let bananaLikeCount = 0;  // นับพิกเซลที่มีโทนสีอยู่ในช่วงที่กล้วยหอมควรจะเป็น (เขียว-เหลือง-น้ำตาล)
+
+  const step = 4 * 6; // ข้ามพิกเซลทีละ 6 พิกเซล (คูณ 4 เพราะข้อมูล 1 พิกเซลมี 4 ค่า: R,G,B,A) เพื่อให้ประมวลผลเร็วขึ้น
   for (let i = 0; i < data.length; i += step) {
     const r = data[i], g = data[i + 1], b = data[i + 2];
     const [hue, s, v] = rgbToHsv(r, g, b);
     sumH += hue; sumS += s; sumV += v; count++;
+
+    // เงื่อนไขจุดด่างน้ำตาล: มืดพอสมควร (v < 0.35) และยังมีสีสันอยู่ (s > 0.25) ไม่ใช่แค่เงาดำเฉย ๆ
     if (v < 0.35 && s > 0.25) darkCount++;
+
+    // เงื่อนไข "ดูเหมือนกล้วย": อยู่ในช่วงโทนเขียว-เหลือง (hue 20-170 องศา) และมีความสดของสีพอสมควร
+    const isBananaHue = (hue >= 20 && hue <= 170) && s > 0.15;
+    // หรือเป็นสีน้ำตาลเข้มแบบเปลือกกล้วยสุกงอมจัด (โทนสีส้ม-น้ำตาล แต่มืดลง)
+    const isDarkBrown = v < 0.45 && hue >= 10 && hue <= 60 && s > 0.2;
+    if (isBananaHue || isDarkBrown) bananaLikeCount++;
   }
+
   const avgHue = sumH / count;
   const avgSat = sumS / count;
   const avgVal = sumV / count;
   const spotRatio = darkCount / count;
+  const bananaRatio = bananaLikeCount / count; // สัดส่วนพิกเซลที่ "ดูเหมือนกล้วย" ต่อพิกเซลทั้งหมดที่สุ่มตรวจ
 
+  /* ---- ด่านตรวจแรก: นี่คือกล้วยหอมจริงหรือเปล่า? ----
+     ถ้าสัดส่วนพิกเซลที่มีโทนสีแบบกล้วย (เขียว/เหลือง/น้ำตาล) ต่ำกว่า 40%
+     แปลว่าวัตถุในภาพส่วนใหญ่ไม่ใช่โทนสีกล้วยหอม (เช่น เป็นสีฟ้า แดง ขาว เทา ฯลฯ)
+     ให้ตัดสินว่า "ไม่ใช่กล้วยหอม" ทันที ไม่ต้องไปจำแนกระยะต่อ */
+  if (bananaRatio < 0.4) {
+    return {
+      stageKey: 'notBanana',
+      // ค่าความเชื่อมั่นตรงนี้หมายถึง "มั่นใจว่าไม่ใช่กล้วย" ยิ่งสัดส่วนสีกล้วยยิ่งต่ำ ยิ่งมั่นใจมาก
+      confidence: Math.round(Math.min(96, 60 + (1 - bananaRatio) * 40))
+    };
+  }
+
+  /* ---- ด่านที่สอง: ยืนยันว่าเป็นกล้วยแล้ว ให้จำแนกว่าอยู่ระยะไหน ---- */
   let stageKey, confidence;
   if (spotRatio > 0.12 || avgVal < 0.38) {
+    // มีจุดด่างน้ำตาลเยอะ หรือภาพโดยรวมมืด/คล้ำ → ตัดสินว่าสุกงอมเริ่มเสีย
     stageKey = 'over';
     confidence = 78 + Math.min(spotRatio * 60, 18);
   } else if (avgHue >= 70 && avgHue <= 170 && avgSat > 0.22) {
+    // โทนสีเขียวเด่นชัดและสดพอสมควร → ตัดสินว่าดิบห่าม
     stageKey = 'raw';
     confidence = 72 + Math.min((avgSat - 0.22) * 80, 22);
   } else {
+    // นอกเหนือจากสองกรณีข้างต้น (โทนเหลืองนวล) → ตัดสินว่าสุกกำลังดี
     stageKey = 'ripe';
     confidence = 75 + Math.min(avgSat * 40, 20);
   }
-  confidence = Math.max(60, Math.min(97, confidence));
+
+  confidence = Math.max(60, Math.min(97, confidence)); // จำกัดค่าความเชื่อมั่นให้อยู่ในช่วง 60-97%
   return { stageKey, confidence: Math.round(confidence) };
 }
 
+/* ================================================================
+   ส่วนที่ 8: นำผลลัพธ์จาก analyzeFrame() มาแสดงผลบนการ์ด UI
+   ================================================================ */
 function showResult({ stageKey, confidence }) {
-  const stage = STAGES[stageKey];
-  resultStage.textContent = stage.name;
-  resultBadge.textContent = stageKey === 'over' ? 'ควรแปรรูปด่วน' : (stageKey === 'ripe' ? 'พร้อมทาน' : 'รอสุก');
+  const stage = STAGES[stageKey]; // ดึงข้อมูล ชื่อ/สี/คำแนะนำ ของระยะนั้น ๆ (หรือของ notBanana)
+
+  resultStage.textContent = stage.name; // ใส่ชื่อระยะ เช่น "ระยะสุกกำลังดี" หรือ "ไม่พบกล้วยหอมในภาพ"
+
+  // กำหนดข้อความบนป้ายเล็ก ตามสถานะที่ตรวจพบ
+  if (stageKey === 'notBanana') {
+    resultBadge.textContent = 'ไม่ใช่กล้วย';
+  } else if (stageKey === 'over') {
+    resultBadge.textContent = 'ควรแปรรูปด่วน';
+  } else if (stageKey === 'ripe') {
+    resultBadge.textContent = 'พร้อมทาน';
+  } else {
+    resultBadge.textContent = 'รอสุก';
+  }
   resultBadge.style.background = stage.color;
+
+  // อัปเดตแถบและตัวเลขค่าความเชื่อมั่น
   confPct.textContent = confidence + '%';
   confFill.style.width = confidence + '%';
   confFill.style.background = stage.color;
-  resultNote.textContent = stage.note;
-  resultCard.classList.add('show');
+
+  resultNote.textContent = stage.note; // ข้อความคำแนะนำท้ายการ์ด
+  resultCard.classList.add('show');    // สั่งให้การ์ดผลลัพธ์แสดงขึ้นมา (มี animation ตามที่กำหนดใน CSS)
 }
 </script>
 
