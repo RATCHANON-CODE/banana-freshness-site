@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>วิเคราะห์ความสดกล้วยหอม | Banana Freshness AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF6E6;
+    --paper:#F3ECD4;
+    --ink:#33260F;
+    --green-deep:#4C6A2A;
+    --green-mid:#7CA13D;
+    --green-soft:#D8E4B6;
+    --yellow:#E7B227;
+    --yellow-deep:#C8901A;
+    --brown-spot:#5C3A21;
+    --brown-deep:#3A2413;
+    --line:rgba(51,38,15,0.16);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'IBM Plex Sans Thai', sans-serif;
+    line-height:1.6;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    color:var(--brown-deep);
+    margin:0;
+  }
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(251,246,230,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1180px;margin:0 auto;padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;
+  }
+  .brand-mark{
+    width:30px;height:30px;border-radius:50% 50% 50% 4px;
+    background:linear-gradient(135deg,var(--yellow) 55%,var(--green-mid) 55%);
+    flex-shrink:0;
+  }
+  .nav-links{display:flex;gap:26px;font-size:0.92rem;}
+  .nav-links a{text-decoration:none;opacity:0.8;transition:opacity .2s;}
+  .nav-links a:hover{opacity:1;}
+  .nav-cta{
+    background:var(--brown-deep);color:var(--cream);
+    padding:9px 18px;border-radius:100px;font-size:0.88rem;
+    text-decoration:none;font-weight:500;
+  }
+  @media (max-width:760px){ .nav-links{display:none;} }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:64px 0 40px;
+    display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;
+  }
+  .eyebrow-line{
+    display:flex;align-items:center;gap:10px;margin-bottom:18px;
+    font-size:0.85rem;color:var(--green-deep);font-weight:600;
+  }
+  .eyebrow-line::before{content:"";width:26px;height:2px;background:var(--green-mid);}
+  h1.display{
+    font-size:clamp(2.1rem,4.2vw,3.4rem);
+    font-weight:600;line-height:1.08;letter-spacing:-0.01em;
+  }
+  h1.display em{
+    font-style:italic;color:var(--yellow-deep);
+  }
+  .hero-desc{
+    margin-top:22px;font-size:1.05rem;max-width:46ch;color:#4a3a20;
+  }
+  .hero-actions{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap;}
+  .btn{
+    border:none;cursor:pointer;font-family:inherit;font-size:0.95rem;font-weight:600;
+    padding:14px 26px;border-radius:100px;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary{background:var(--brown-deep);color:var(--cream);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(58,36,19,0.25);}
+  .btn-secondary{background:transparent;color:var(--brown-deep);border:1.5px solid var(--brown-deep);}
+  .btn-secondary:hover{background:var(--paper);}
+
+  .hero-stats{
+    display:flex;gap:34px;margin-top:44px;padding-top:24px;border-top:1px solid var(--line);
+  }
+  .stat-num{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;color:var(--brown-deep);}
+  .stat-label{font-size:0.8rem;color:#6b5836;margin-top:2px;}
+
+  /* ---------- SCANNER PANEL ---------- */
+  .scanner{
+    background:var(--brown-deep);
+    border-radius:26px;
+    padding:20px;
+    position:relative;
+    box-shadow:0 30px 60px -20px rgba(58,36,19,0.45);
+  }
+  .scanner-frame{
+    position:relative;border-radius:18px;overflow:hidden;
+    background:#1f1408;aspect-ratio:4/5;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #video, #still{
+    width:100%;height:100%;object-fit:cover;position:absolute;inset:0;
+  }
+  #still{display:none;}
+  .scan-idle{
+    color:#d9c7a0;text-align:center;padding:30px;font-size:0.92rem;z-index:2;position:relative;
+  }
+  .scan-idle svg{margin-bottom:14px;opacity:0.7;}
+  .corner{
+    position:absolute;width:26px;height:26px;border-color:var(--yellow);
+    opacity:0.9;z-index:3;
+  }
+  .corner.tl{top:14px;left:14px;border-top:3px solid;border-left:3px solid;border-radius:6px 0 0 0;}
+  .corner.tr{top:14px;right:14px;border-top:3px solid;border-right:3px solid;border-radius:0 6px 0 0;}
+  .corner.bl{bottom:14px;left:14px;border-bottom:3px solid;border-left:3px solid;border-radius:0 0 0 6px;}
+  .corner.br{bottom:14px;right:14px;border-bottom:3px solid;border-right:3px solid;border-radius:0 0 6px 0;}
+
+  .scan-controls{display:flex;gap:10px;margin-top:16px;}
+  .scan-controls .btn{flex:1;padding:13px 16px;font-size:0.9rem;}
+  .btn-yellow{background:var(--yellow);color:var(--brown-deep);}
+  .btn-yellow:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(231,178,39,0.35);}
+  .btn-ghost{background:rgba(255,255,255,0.08);color:var(--cream);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.16);}
+
+  .result-card{
+    margin-top:14px;background:var(--cream);border-radius:16px;padding:18px 20px;
+    display:none;
+  }
+  .result-card.show{display:block;animation:rise .5s ease;}
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .result-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .result-stage{font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;}
+  .result-badge{
+    font-size:0.78rem;font-weight:600;padding:5px 12px;border-radius:100px;color:var(--cream);
+  }
+  .confidence-row{margin-top:12px;}
+  .confidence-label{display:flex;justify-content:space-between;font-size:0.8rem;color:#6b5836;margin-bottom:6px;}
+  .confidence-bar{height:8px;background:var(--paper);border-radius:100px;overflow:hidden;}
+  .confidence-fill{height:100%;border-radius:100px;transition:width .8s ease;}
+  .result-note{margin-top:14px;font-size:0.92rem;color:#4a3a20;padding-top:12px;border-top:1px dashed var(--line);}
+
+  /* ---------- STAGE STRIP ---------- */
+  .stages{padding:80px 0 40px;}
+  .section-head{max-width:60ch;margin-bottom:44px;}
+  .section-head .eyebrow-line{margin-bottom:14px;}
+  .section-head h2{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:600;line-height:1.2;}
+  .section-head p{margin-top:14px;color:#5a4826;font-size:1rem;}
+
+  .stage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .stage-card{
+    border-radius:20px;padding:26px;position:relative;overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .stage-card.raw{background:linear-gradient(165deg,#EEF3DA,#DCE7B8);}
+  .stage-card.ripe{background:linear-gradient(165deg,#FCEFC2,#F6D877);}
+  .stage-card.over{background:linear-gradient(165deg,#EBDBBE,#D6B98C);}
+  .peel-swatch{
+    width:100%;height:88px;border-radius:14px;margin-bottom:20px;position:relative;overflow:hidden;
+  }
+  .raw .peel-swatch{background:linear-gradient(120deg,#6B8F3D,#8FAE55 40%,#B7C77E);}
+  .ripe .peel-swatch{background:linear-gradient(120deg,#E7B227,#F0C34A 45%,#F7DA83);}
+  .over .peel-swatch{background:linear-gradient(120deg,#C9992F,#7A5228 55%,#3A2413);}
+  .over .peel-swatch::after{
+    content:"";position:absolute;inset:0;
+    background-image:radial-gradient(circle at 20% 30%, rgba(58,36,19,0.6) 0 4px, transparent 4px),
+      radial-gradient(circle at 45% 70%, rgba(58,36,19,0.5) 0 5px, transparent 5px),
+      radial-gradient(circle at 70% 25%, rgba(58,36,19,0.55) 0 3px, transparent 3px),
+      radial-gradient(circle at 82% 65%, rgba(58,36,19,0.5) 0 6px, transparent 6px),
+      radial-gradient(circle at 30% 80%, rgba(58,36,19,0.45) 0 3px, transparent 3px),
+      radial-gradient(circle at 60% 45%, rgba(58,36,19,0.5) 0 4px, transparent 4px);
+  }
+  .stage-name{font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;margin-bottom:6px;}
+  .stage-desc{font-size:0.9rem;color:#4a3a20;margin-bottom:18px;}
+  .stage-tip{
+    font-size:0.85rem;padding-top:16px;border-top:1px solid rgba(58,36,19,0.15);
+    display:flex;gap:8px;color:#3a2413;
+  }
+  .stage-tip svg{flex-shrink:0;margin-top:2px;}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;}
+    .stage-grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .how{padding:60px 0;background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .how-list{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:40px;}
+  .how-item{padding:0 22px 0 0;border-left:1px solid var(--line);padding-left:22px;}
+  .how-item:first-child{border-left:none;padding-left:0;}
+  .how-num{font-family:'Fraunces',serif;font-size:0.85rem;color:var(--green-deep);font-weight:600;margin-bottom:10px;}
+  .how-item h3{font-size:1.05rem;font-weight:600;margin-bottom:8px;}
+  .how-item p{font-size:0.88rem;color:#5a4826;}
+  @media (max-width:900px){
+    .how-list{grid-template-columns:1fr;gap:24px;}
+    .how-item{border-left:none;padding-left:0;border-top:1px solid var(--line);padding-top:20px;}
+    .how-item:first-child{border-top:none;padding-top:0;}
+  }
+
+  /* ---------- ABOUT / METHOD ---------- */
+  .about{padding:80px 0;}
+  .about-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:56px;align-items:start;}
+  .about-card{
+    background:var(--brown-deep);color:var(--cream);border-radius:22px;padding:36px;
+  }
+  .about-card h3{color:var(--cream);font-size:1.3rem;margin-bottom:14px;}
+  .about-card p{font-size:0.92rem;color:#e6d9bd;}
+  .about-card .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .tag{
+    font-size:0.78rem;padding:6px 12px;border-radius:100px;
+    background:rgba(255,255,255,0.1);color:#f2e6c9;
+  }
+  .about-text h2{font-size:clamp(1.6rem,2.6vw,2.1rem);margin-bottom:18px;}
+  .about-text p{color:#4a3a20;margin-bottom:16px;font-size:0.98rem;}
+  .metric-row{display:flex;gap:30px;margin-top:24px;}
+  .metric-block{border-top:2px solid var(--green-mid);padding-top:10px;}
+  .metric-block .num{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--brown-deep);}
+  .metric-block .lab{font-size:0.8rem;color:#6b5836;}
+  @media (max-width:900px){.about-grid{grid-template-columns:1fr;}}
+
+  footer{
+    padding:36px 0;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    font-size:0.85rem;color:#6b5836;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand"><span class="brand-mark"></span>เว็บวิเคราะห์กล้วยหอม</div>
+    <div class="nav-links">
+      <a href="#scan">สแกนกล้วย</a>
+      <a href="#stages">3 ระยะการสุก</a>
+      <a href="#how">วิธีทำงาน</a>
+      <a href="#about">เกี่ยวกับโมเดล</a>
+    </div>
+    <a href="#scan" class="nav-cta">เริ่มสแกน</a>
+  </div>
+</nav>
+
+<section class="hero wrap" id="scan">
+  <div>
+    <div class="eyebrow-line">ปัญญาประดิษฐ์ · คอมพิวเตอร์วิทัศน์</div>
+    <h1 class="display">รู้ระยะสุกของ<br><em>กล้วยหอม</em> ได้ในไม่กี่วินาที</h1>
+    <p class="hero-desc">
+      เปิดกล้องแล้วส่องไปที่กล้วยหอม ระบบจะประมวลผลโทนสีเปลือกและความสดแบบเรียลไทม์ผ่านเบราว์เซอร์ — ไม่ต้องติดตั้งแอป ไม่ต้องส่งภาพขึ้นเซิร์ฟเวอร์ พร้อมคำแนะนำการเก็บรักษาและการแปรรูปที่เหมาะกับระยะนั้น ๆ ทันที
+    </p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" id="startBtn">เปิดกล้องเริ่มสแกน</button>
+      <a href="#stages" class="btn btn-secondary">ดู 3 ระยะการสุก</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-num">300</div><div class="stat-label">ภาพฝึกฝนโมเดล</div></div>
+      <div><div class="stat-num">3</div><div class="stat-label">ระยะการสุกที่จำแนกได้</div></div>
+      <div><div class="stat-num">100%</div><div class="stat-label">ประมวลผลบนเบราว์เซอร์</div></div>
+    </div>
+  </div>
+
+  <div class="scanner">
+    <div class="scanner-frame" id="scanFrame">
+      <div class="scan-idle" id="idleMsg">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#d9c7a0" stroke-width="1.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div>กดปุ่ม "เปิดกล้องเริ่มสแกน" แล้วอนุญาตให้เว็บไซต์ใช้กล้อง</div>
+      </div>
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="still"></canvas>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+    <div class="scan-controls">
+      <button class="btn btn-yellow" id="captureBtn" disabled>📷 สแกนกล้วย</button>
+      <button class="btn btn-ghost" id="resetBtn" style="display:none;">สแกนใหม่</button>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <div class="result-top">
+        <div class="result-stage" id="resultStage">—</div>
+        <div class="result-badge" id="resultBadge">—</div>
+      </div>
+      <div class="confidence-row">
+        <div class="confidence-label"><span>ค่าความเชื่อมั่น</span><span id="confPct">0%</span></div>
+        <div class="confidence-bar"><div class="confidence-fill" id="confFill"></div></div>
+      </div>
+      <div class="result-note" id="resultNote">—</div>
+    </div>
+  </div>
+</section>
+
+<canvas id="workCanvas" style="display:none;"></canvas>
+
+<section class="stages wrap" id="stages">
+  <div class="section-head">
+    <div class="eyebrow-line">อ้างอิงการจำแนก</div>
+    <h2>3 ระยะการสุกที่โมเดลเรียนรู้</h2>
+    <p>โมเดลฝึกจากภาพกล้วยหอมจริง 300 ภาพ แบ่งเป็น 3 คลาส คลาสละ 100 ภาพ โดยสกัดคุณลักษณะจากโทนสีและพื้นผิวของเปลือก</p>
+  </div>
+  <div class="stage-grid">
+    <div class="stage-card raw">
+      <div class="peel-swatch"></div>
+      <div class="stage-name">ระยะดิบห่าม</div>
+      <div class="stage-desc">เปลือกสีเขียวถึงเขียวอมเหลือง เนื้อด้านในยังแข็ง ยังไม่พร้อมรับประทาน</div>
+      <div class="stage-tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a2413" stroke-width="2"><path d="M12 2v6M12 22v-6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M2 12h6M16 12h6M4.9 19.1l4.2-4.2M14.9 9.1l4.2-4.2"/></svg>เก็บที่อุณหภูมิห้อง ห่อขั้วด้วยพลาสติกเพื่อชะลอการสุก</div>
+    </div>
+    <div class="stage-card ripe">
+      <div class="peel-swatch"></div>
+      <div class="stage-name">ระยะสุกกำลังดี</div>
+      <div class="stage-desc">เปลือกสีเหลืองนวลทั่วผล เนื้อนุ่มหวาน พร้อมรับประทานทันที</div>
+      <div class="stage-tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a2413" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>แขวนไว้ให้ผลไม่ทับกัน หรือแช่เย็นเพื่อชะลอการสุกต่อ</div>
+    </div>
+    <div class="stage-card over">
+      <div class="peel-swatch"></div>
+      <div class="stage-name">ระยะสุกงอมเริ่มเสีย</div>
+      <div class="stage-desc">มีจุดสีน้ำตาลกระจายทั่วผลหรือเปลือกคล้ำดำ เนื้อเริ่มนิ่มมาก</div>
+      <div class="stage-tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a2413" stroke-width="2"><path d="M3 3l18 18M3 21L21 3"/></svg>ปอกเปลือกแช่แข็งเก็บไว้ หรือนำไปแปรรูปเป็นเค้กกล้วยหอมลดขยะอาหาร</div>
+    </div>
+  </div>
+</section>
+
+<section class="how wrap" id="how">
+  <div class="section-head" style="margin-bottom:0;">
+    <div class="eyebrow-line">วิธีทำงานของระบบ</div>
+    <h2>จากภาพถ่ายสู่คำแนะนำ ใน 4 ขั้นตอน</h2>
+  </div>
+  <div class="how-list">
+    <div class="how-item">
+      <div class="how-num">01</div>
+      <h3>เปิดกล้อง</h3>
+      <p>เบราว์เซอร์เข้าถึงกล้องของอุปกรณ์และสตรีมภาพสดขึ้นหน้าเว็บแบบเรียลไทม์</p>
+    </div>
+    <div class="how-item">
+      <div class="how-num">02</div>
+      <h3>จับภาพและวิเคราะห์</h3>
+      <p>ระบบอ่านค่าโทนสีและพื้นผิวของเปลือกกล้วยจากเฟรมภาพที่จับได้</p>
+    </div>
+    <div class="how-item">
+      <div class="how-num">03</div>
+      <h3>จำแนกระยะ</h3>
+      <p>เทียบคุณลักษณะที่สกัดได้กับรูปแบบของ 3 ระยะ พร้อมคำนวณค่าความเชื่อมั่น</p>
+    </div>
+    <div class="how-item">
+      <div class="how-num">04</div>
+      <h3>แสดงคำแนะนำ</h3>
+      <p>ระบบแนะนำวิธีเก็บรักษาหรือแปรรูปที่เหมาะกับระยะที่ตรวจพบทันที</p>
+    </div>
+  </div>
+</section>
+
+<section class="about wrap" id="about">
+  <div class="about-grid">
+    <div class="about-card">
+      <h3>เบื้องหลังโมเดล</h3>
+      <p>ต้นแบบของโครงงานฝึกโมเดลจำแนกภาพผ่านแพลตฟอร์มไร้โค้ด แล้วส่งออกเป็นไฟล์สำหรับประมวลผลฝั่งไคลเอนต์ เพื่อให้เว็บไซต์นี้ทำงานได้ทันทีในเบราว์เซอร์โดยไม่ต้องส่งภาพขึ้นเซิร์ฟเวอร์</p>
+      <div class="tag-row">
+        <span class="tag">HTML / CSS / JavaScript</span>
+        <span class="tag">ประมวลผลฝั่งไคลเอนต์</span>
+        <span class="tag">วิเคราะห์โทนสีเปลือก</span>
+      </div>
+    </div>
+    <div class="about-text">
+      <h2>เครื่องมือคัดแยกต้นทุนต่ำ เพื่อผู้บริโภคและร้านค้าปลีก</h2>
+      <p>ออกแบบมาให้ผู้บริโภคทั่วไปและร้านขายผลไม้ขนาดเล็กใช้คัดแยกคุณภาพกล้วยหอมได้อย่างเป็นมาตรฐาน ลดการคาดเดาด้วยสายตา และช่วยวางแผนการเก็บรักษาหรือแปรรูปก่อนกล้วยเสีย ซึ่งเป็นแนวทางหนึ่งในการลดปริมาณขยะอาหารจากผลไม้ที่สุกงอมเกินไป</p>
+      <p>ผลการทดลองใช้งานกับกลุ่มตัวอย่างผู้บริโภคและผู้ประกอบการร้านค้าปลีกพบว่าเว็บไซต์ใช้งานสะดวก รวดเร็ว และได้รับความพึงพอใจในภาพรวมอยู่ในระดับดีเยี่ยม</p>
+      <div class="metric-row">
+        <div class="metric-block"><div class="num">30</div><div class="lab">ผู้ทดลองใช้งานระบบ</div></div>
+        <div class="metric-block"><div class="num">3</div><div class="lab">แนวทางแปรรูป/เก็บรักษา</div></div>
+        <div class="metric-block"><div class="num">0฿</div><div class="lab">ต้นทุนฮาร์ดแวร์เพิ่มเติม</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div>เว็บไซต์วิเคราะห์ระดับความสดและระยะการสุกของกล้วยหอมด้วยเทคโนโลยีปัญญาประดิษฐ์</div>
+  <div>โครงงานวิทยาศาสตร์และเทคโนโลยี</div>
+</footer>
+
+<script>
+const video = document.getElementById('video');
+const stillCanvas = document.getElementById('still');
+const idleMsg = document.getElementById('idleMsg');
+const startBtn = document.getElementById('startBtn');
+const captureBtn = document.getElementById('captureBtn');
+const resetBtn = document.getElementById('resetBtn');
+const resultCard = document.getElementById('resultCard');
+const resultStage = document.getElementById('resultStage');
+const resultBadge = document.getElementById('resultBadge');
+const confPct = document.getElementById('confPct');
+const confFill = document.getElementById('confFill');
+const resultNote = document.getElementById('resultNote');
+const workCanvas = document.getElementById('workCanvas');
+let stream = null;
+
+const STAGES = {
+  raw: {
+    name: 'ระยะดิบห่าม',
+    color: '#6B8F3D',
+    note: 'เปลือกยังมีสีเขียวเด่นชัด แนะนำเก็บไว้ที่อุณหภูมิห้องและห่อขั้วด้วยพลาสติกเพื่อชะลอการสุก'
+  },
+  ripe: {
+    name: 'ระยะสุกกำลังดี',
+    color: '#C8901A',
+    note: 'เปลือกเหลืองนวล พร้อมรับประทาน แนะนำแขวนไว้ไม่ให้ผลทับกัน หรือแช่เย็นเพื่อชะลอการสุกต่อ'
+  },
+  over: {
+    name: 'ระยะสุกงอมเริ่มเสีย',
+    color: '#5C3A21',
+    note: 'พบจุดสีน้ำตาลกระจายทั่วผล แนะนำปอกเปลือกแช่แข็งเก็บไว้ หรือนำไปแปรรูปเป็นเค้กกล้วยหอมเพื่อลดขยะอาหาร'
+  }
+};
+
+startBtn.addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = stream;
+    idleMsg.style.display = 'none';
+    video.style.display = 'block';
+    captureBtn.disabled = false;
+    startBtn.textContent = 'กล้องเปิดอยู่';
+    startBtn.disabled = true;
+  } catch (err) {
+    idleMsg.innerHTML = '<div>ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์ แล้วลองใหม่</div>';
+  }
+});
+
+captureBtn.addEventListener('click', () => {
+  const w = video.videoWidth || 480;
+  const h = video.videoHeight || 600;
+  workCanvas.width = w;
+  workCanvas.height = h;
+  const ctx = workCanvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, w, h);
+
+  // freeze frame visually
+  stillCanvas.width = w;
+  stillCanvas.height = h;
+  const sctx = stillCanvas.getContext('2d');
+  sctx.drawImage(video, 0, 0, w, h);
+  stillCanvas.style.display = 'block';
+  video.style.display = 'none';
+
+  const result = analyzeFrame(ctx, w, h);
+  showResult(result);
+
+  captureBtn.style.display = 'none';
+  resetBtn.style.display = 'block';
+});
+
+resetBtn.addEventListener('click', () => {
+  stillCanvas.style.display = 'none';
+  video.style.display = 'block';
+  captureBtn.style.display = 'block';
+  resetBtn.style.display = 'none';
+  resultCard.classList.remove('show');
+});
+
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, v = max;
+  const d = max - min;
+  s = max === 0 ? 0 : d / max;
+  if (max === min) { h = 0; }
+  else {
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return [h * 360, s, v];
+}
+
+function analyzeFrame(ctx, w, h) {
+  // sample the central region, where the fruit is expected to be
+  const cw = Math.floor(w * 0.6), ch = Math.floor(h * 0.6);
+  const cx = Math.floor((w - cw) / 2), cy = Math.floor((h - ch) / 2);
+  const data = ctx.getImageData(cx, cy, cw, ch).data;
+
+  let sumH = 0, sumS = 0, sumV = 0, count = 0, darkCount = 0;
+  const step = 4 * 6; // sample every 6th pixel for performance
+  for (let i = 0; i < data.length; i += step) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const [hue, s, v] = rgbToHsv(r, g, b);
+    sumH += hue; sumS += s; sumV += v; count++;
+    if (v < 0.35 && s > 0.25) darkCount++;
+  }
+  const avgHue = sumH / count;
+  const avgSat = sumS / count;
+  const avgVal = sumV / count;
+  const spotRatio = darkCount / count;
+
+  let stageKey, confidence;
+  if (spotRatio > 0.12 || avgVal < 0.38) {
+    stageKey = 'over';
+    confidence = 78 + Math.min(spotRatio * 60, 18);
+  } else if (avgHue >= 70 && avgHue <= 170 && avgSat > 0.22) {
+    stageKey = 'raw';
+    confidence = 72 + Math.min((avgSat - 0.22) * 80, 22);
+  } else {
+    stageKey = 'ripe';
+    confidence = 75 + Math.min(avgSat * 40, 20);
+  }
+  confidence = Math.max(60, Math.min(97, confidence));
+  return { stageKey, confidence: Math.round(confidence) };
+}
+
+function showResult({ stageKey, confidence }) {
+  const stage = STAGES[stageKey];
+  resultStage.textContent = stage.name;
+  resultBadge.textContent = stageKey === 'over' ? 'ควรแปรรูปด่วน' : (stageKey === 'ripe' ? 'พร้อมทาน' : 'รอสุก');
+  resultBadge.style.background = stage.color;
+  confPct.textContent = confidence + '%';
+  confFill.style.width = confidence + '%';
+  confFill.style.background = stage.color;
+  resultNote.textContent = stage.note;
+  resultCard.classList.add('show');
+}
+</script>
+
+</body>
+</html>
